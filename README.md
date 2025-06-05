@@ -143,4 +143,3 @@ You can provide the API key in one of the following ways:
 1. Command line argument: `--api-key YOUR_API_KEY`
 2. Environment variable: `ENTSOE_API_KEY=YOUR_API_KEY`
 3. `.env` file with `ENTSOE_API_KEY=YOUR_API_KEY`
-
