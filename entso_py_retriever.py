@@ -419,6 +419,32 @@ def retrieve_data_in_chunks(start_date: datetime, end_date: datetime, api_key: s
     else:
         return pd.DataFrame()
 
+def normalize_to_utc(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Normalize timestamps in DataFrame to UTC.
+    
+    Args:
+        df (pd.DataFrame): DataFrame with timezone-aware timestamps
+        
+    Returns:
+        pd.DataFrame: DataFrame with timestamps normalized to UTC
+    """
+    if df.empty:
+        return df
+    
+    # Make a copy to avoid modifying the original DataFrame
+    df_utc = df.copy()
+    
+    # Ensure datetime column is timezone-aware
+    if df_utc['datetime'].dt.tz is None:
+        # If timezone info is missing, assume it's in UTC
+        df_utc['datetime'] = df_utc['datetime'].dt.tz_localize('UTC')
+    else:
+        # If timezone info is present, convert to UTC
+        df_utc['datetime'] = df_utc['datetime'].dt.tz_convert('UTC')
+    
+    return df_utc
+
 def convert_to_local_timezone(df: pd.DataFrame, country_code: str) -> pd.DataFrame:
     """
     Convert timestamps in DataFrame to local timezone for the specified country.
@@ -485,6 +511,7 @@ def calculate_daily_metrics(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame()
     
     # Convert datetime to date for grouping
+    # This will use the timezone-aware datetime to extract the date
     df['date'] = df['datetime'].dt.date
     
     # Group by date and country
@@ -575,6 +602,9 @@ def process_country_data(country_code: str, api_key: str, start_date: datetime, 
         logger.error(f"No data retrieved for {country_code}. Skipping.")
         return pd.DataFrame(), pd.DataFrame()
     
+    # First, normalize all timestamps to UTC to ensure consistency
+    df = normalize_to_utc(df)
+    
     # Get timezone suffix for filenames
     timezone_suffix = get_timezone_suffix(country_code, use_local_time)
     
@@ -664,19 +694,27 @@ def main():
                 timezone_suffix = "local_mixed"  # Since we have multiple countries with different timezones
             
             if all_metrics:
-                combined_metrics = pd.concat(all_metrics).reset_index(drop=True)
-                export_to_csv(combined_metrics, f"combined_price_metrics_{timezone_suffix}.csv")
+                # Combine metrics
+                combined_metrics = pd.concat(all_metrics)
+                
+                # Export combined metrics
+                combined_metrics_filename = f"combined_price_metrics_{timezone_suffix}.csv"
+                export_to_csv(combined_metrics, combined_metrics_filename)
             
             if all_raw_data:
-                combined_raw = pd.concat(all_raw_data).reset_index(drop=True)
-                export_to_csv(combined_raw, f"combined_raw_prices_{timezone_suffix}.csv")
+                # Combine raw data
+                combined_raw = pd.concat(all_raw_data)
+                
+                # Export combined raw data
+                combined_raw_filename = f"combined_raw_prices_{timezone_suffix}.csv"
+                export_to_csv(combined_raw, combined_raw_filename)
         
-        logger.info("ENTSO-E data retrieval and processing completed")
-        
+        logger.info("Data retrieval and processing completed successfully")
+    
     except Exception as e:
-        logger.error(f"Error during data retrieval: {str(e)}")
-        logger.error("Failed to retrieve data. Exiting.")
-        return
+        logger.error(f"Error during data retrieval and processing: {str(e)}")
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
