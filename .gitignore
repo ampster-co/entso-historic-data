@@ -110,4 +110,5 @@ venv.bak/
 
 # Project specific
 *.csv
+*.xlsx
 test_export.csv

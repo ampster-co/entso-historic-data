@@ -19,12 +19,13 @@ display_menu() {
     echo "4. Retrieve data for multiple countries (last 5 years)"
     echo "5. Retrieve data for custom date range"
     echo "6. Retrieve data with local timezone conversion"
-    echo "7. Exit"
+    echo "7. Export data to Excel format"
+    echo "8. Exit"
     echo ""
     echo "Note: You need an ENTSO-E API key to use this script."
     echo "You can set it in the .env file or provide it when prompted."
     echo ""
-    read -p "Enter your choice (1-7): " choice
+    read -p "Enter your choice (1-8): " choice
 }
 
 # Function to get API key
@@ -141,6 +142,11 @@ while true; do
             python entso_py_retriever.py --countries $countries --years $years $combined_flag --local-time
             ;;
         7)
+            echo ""
+            echo "Exporting data to Excel format..."
+            python export_to_excel.py
+            ;;
+        8)
             echo ""
             echo "Exiting..."
             exit 0

@@ -18,12 +18,13 @@ echo 3. Retrieve data for multiple countries (last 3 years)
 echo 4. Retrieve data for multiple countries (last 5 years)
 echo 5. Retrieve data for custom date range
 echo 6. Retrieve data with local timezone conversion
-echo 7. Exit
+echo 7. Export data to Excel format
+echo 8. Exit
 echo.
 echo Note: You need an ENTSO-E API key to use this script.
 echo You can set it in the .env file or provide it when prompted.
 echo.
-set /p choice=Enter your choice (1-7): 
+set /p choice=Enter your choice (1-8):
 
 if "%choice%"=="1" goto option1
 if "%choice%"=="2" goto option2
@@ -31,7 +32,8 @@ if "%choice%"=="3" goto option3
 if "%choice%"=="4" goto option4
 if "%choice%"=="5" goto option5
 if "%choice%"=="6" goto option6
-if "%choice%"=="7" goto exit
+if "%choice%"=="7" goto export_excel
+if "%choice%"=="8" goto exit
 echo.
 echo Invalid choice. Please try again.
 timeout /t 2 >nul
@@ -153,6 +155,12 @@ goto continue
 echo.
 pause
 goto menu
+
+:export_excel
+echo.
+echo Exporting data to Excel format...
+python export_to_excel.py
+goto continue
 
 :exit
 echo.

@@ -22,6 +22,7 @@ This project retrieves historic electricity price data from the ENTSO-E Transpar
   - python-dotenv
   - entsoe-py
   - pytz
+  - openpyxl (for Excel export functionality)
 
 ## Installation
 
@@ -88,6 +89,30 @@ The script generates the following output files:
 The `{timezone}` in the filename indicates whether the data is in UTC or local timezone:
 - When using default UTC time: `nl_price_metrics_utc.csv`
 - When using local time: `nl_price_metrics_local_CEST.csv` (timezone abbreviation may vary)
+
+### Excel Export
+
+The project also includes a script to export the CSV data to Excel format:
+
+```bash
+# Export all CSV files to Excel
+python export_to_excel.py
+```
+
+This script:
+- Creates a single Excel file with multiple sheets
+- Includes a summary sheet with information about the data
+- Formats the data for better readability
+- Handles large datasets by limiting the number of rows per sheet
+- Includes country codes in the filename (e.g., `entso_price_data_NL_20250605_152855.xlsx`)
+- Automatically detects which countries are included in the data
+
+The Excel file contains the following sheets:
+- Summary: Overview of the data and sheet contents
+- Daily Metrics (Local Time): Min, max, and weighted average prices per day in local timezone
+- Daily Metrics (UTC): Min, max, and weighted average prices per day in UTC timezone
+- Raw Prices (Local Time): Hourly price data in local timezone (limited to 10,000 rows)
+- Raw Prices (UTC): Hourly price data in UTC timezone (limited to 10,000 rows)
 
 ## Timezone Handling
 
