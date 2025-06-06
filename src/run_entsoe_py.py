@@ -143,8 +143,8 @@ def print_footer(countries, combined, use_local_time):
     for country in countries:
         country_lower = country.lower()
         timezone_suffix = get_timezone_suffix(country, use_local_time)
-        metrics_file = f"{country_lower}_price_metrics_{timezone_suffix}.csv"
-        raw_file = f"{country_lower}_raw_prices_{timezone_suffix}.csv"
+        metrics_file = f"data/{country_lower}_price_metrics_{timezone_suffix}.csv"
+        raw_file = f"data/{country_lower}_raw_prices_{timezone_suffix}.csv"
         
         for file in [metrics_file, raw_file]:
             if os.path.exists(file):
@@ -158,7 +158,7 @@ def print_footer(countries, combined, use_local_time):
         if use_local_time:
             timezone_suffix = "local_mixed"  # Since we have multiple countries with different timezones
             
-        for file in [f"combined_price_metrics_{timezone_suffix}.csv", f"combined_raw_prices_{timezone_suffix}.csv"]:
+        for file in [f"data/combined_price_metrics_{timezone_suffix}.csv", f"data/combined_raw_prices_{timezone_suffix}.csv"]:
             if os.path.exists(file):
                 size = os.path.getsize(file) / 1024  # Size in KB
                 print(f" - {file} ({size:.2f} KB)")

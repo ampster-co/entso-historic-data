@@ -2,6 +2,31 @@
 
 This project retrieves historic electricity price data from the ENTSO-E Transparency Platform for multiple countries, calculates daily metrics (min, max, weighted average), and exports the results to CSV files for analysis.
 
+## Project Structure
+
+```
+entso-historic-data/
+├── src/                    # Data fetching and retrieval code
+│   ├── entso_py_retriever.py
+│   ├── export_to_excel.py
+│   ├── run_entsoe_py.py
+│   └── test_*.py
+├── analysis/               # Price pattern analysis code
+│   └── price_pattern_analysis.py
+├── data/                   # Generated data files
+│   ├── nl_raw_prices_local_CEST.csv
+│   └── nl_price_metrics_local_CEST.csv
+├── docs/                   # Documentation
+│   ├── DOCUMENTATION_INDEX.md
+│   ├── PRICE_ANALYSIS_DOCUMENTATION.md
+│   ├── PROJECT_DOCUMENTATION.md
+│   ├── QUICK_REFERENCE_GUIDE.md
+│   └── TECHNICAL_IMPLEMENTATION_GUIDE.md
+├── README.md               # This file
+├── requirements.txt        # Python dependencies
+└── country_config.json     # Country configuration
+```
+
 ## Features
 
 - Retrieves day-ahead electricity prices from ENTSO-E API
@@ -84,15 +109,15 @@ The list of supported countries is dynamic and based on the keys present in `cou
 
 **You must specify either `--local-time` or `--utc` when running the script. If neither is provided, the script will exit with an error.**
 
-### Examples:
+### Data Retrieval Examples:
 
 - Retrieve data for Netherlands (last 3 years, local time):
   ```sh
-  python entso_py_retriever.py --api-key YOUR_API_KEY --countries NL --local-time --years 3
+  python src/entso_py_retriever.py --api-key YOUR_API_KEY --countries NL --local-time --years 3
   ```
 - Retrieve data for multiple countries with local timezone:
   ```sh
-  python entso_py_retriever.py --api-key YOUR_API_KEY --countries NL,DE,FR --local-time --years 3
+  python src/entso_py_retriever.py --api-key YOUR_API_KEY --countries NL,DE,FR --local-time --years 3
   ```
 - Retrieve data for a specific date range in UTC:
   ```sh
@@ -200,10 +225,10 @@ You can provide the API key in one of the following ways:
 This project now includes comprehensive analysis of Dutch electricity price patterns to identify optimization opportunities for solar + battery systems. 
 
 ### Analysis Documentation
-- **[Quick Reference Guide](QUICK_REFERENCE_GUIDE.md)**: Key findings and immediate action items
-- **[Project Overview](PROJECT_DOCUMENTATION.md)**: Comprehensive project documentation
-- **[Business Analysis](PRICE_ANALYSIS_DOCUMENTATION.md)**: Strategic insights and ROI calculations  
-- **[Technical Guide](TECHNICAL_IMPLEMENTATION_GUIDE.md)**: Implementation details and code examples
+- **[Quick Reference Guide](docs/QUICK_REFERENCE_GUIDE.md)**: Key findings and immediate action items
+- **[Project Overview](docs/PROJECT_DOCUMENTATION.md)**: Comprehensive project documentation
+- **[Business Analysis](docs/PRICE_ANALYSIS_DOCUMENTATION.md)**: Strategic insights and ROI calculations  
+- **[Technical Guide](docs/TECHNICAL_IMPLEMENTATION_GUIDE.md)**: Implementation details and code examples
 
 ### Key Findings
 - **Daily Arbitrage**: 0.137 EUR/kWh average spread between cheap (11 AM-2 PM) and expensive (5-8 PM) periods
@@ -213,13 +238,16 @@ This project now includes comprehensive analysis of Dutch electricity price patt
 
 ### Running the Analysis
 ```bash
-# Install analysis dependencies
-pip install pandas matplotlib seaborn
+# Quick start - run the complete analysis
+./run_analysis.sh
 
-# Run comprehensive price pattern analysis
-python src/price_pattern_analysis.py
+# Or run directly:
+python analysis/price_pattern_analysis.py
+
+# Install analysis dependencies if needed
+pip install pandas matplotlib seaborn
 ```
 
 ---
 
-For further details, see the analysis documentation files or contact the maintainer.
+For further details, see the analysis documentation files in the `docs/` directory or contact the maintainer.

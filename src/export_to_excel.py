@@ -41,20 +41,31 @@ def main():
     """
     logger.info("Starting export to Excel")
     
-    # Check if CSV files exist
-    csv_files = [f for f in os.listdir('.') if f.endswith('.csv')]
+    # Check if CSV files exist in data directory
+    data_dir = 'data'
+    if os.path.exists(data_dir):
+        csv_files = [f for f in os.listdir(data_dir) if f.endswith('.csv')]
+        csv_files = [os.path.join(data_dir, f) for f in csv_files]  # Add full path
+    else:
+        csv_files = []
+    
+    # Also check root directory for backward compatibility
+    root_csv_files = [f for f in os.listdir('.') if f.endswith('.csv')]
+    csv_files.extend(root_csv_files)
+    
     if not csv_files:
-        logger.error("No CSV files found. Please run entso_py_retriever.py first.")
+        logger.error("No CSV files found in data/ directory or current directory. Please run entso_py_retriever.py first.")
         sys.exit(1)
     
     # Determine which countries are included in the data
     country_codes = set()
     for file in csv_files:
-        # Extract country code from file name (e.g., nl_price_metrics_local_CEST.csv -> nl)
-        if file.startswith(('combined_', 'all_')):
+        # Extract country code from file name (e.g., data/nl_price_metrics_local_CEST.csv -> nl)
+        file_basename = os.path.basename(file)  # Get just the filename without path
+        if file_basename.startswith(('combined_', 'all_')):
             country_codes.add('combined')
         else:
-            parts = file.split('_')
+            parts = file_basename.split('_')
             if len(parts) > 0:
                 country_code = parts[0].upper()
                 if len(country_code) <= 2:  # Most country codes are 2 letters
@@ -110,12 +121,13 @@ def main():
         metrics_files = [f for f in csv_files if 'price_metrics' in f]
         for file in metrics_files:
             # Get sheet name from file name
-            if 'local_CEST' in file:
+            file_basename = os.path.basename(file)  # Get just the filename without path
+            if 'local_CEST' in file_basename:
                 sheet_name = 'Daily Metrics (Local Time)'
-            elif 'utc' in file:
+            elif 'utc' in file_basename:
                 sheet_name = 'Daily Metrics (UTC)'
             else:
-                sheet_name = file.replace('.csv', '')
+                sheet_name = file_basename.replace('.csv', '')
                 if len(sheet_name) > 31:  # Excel sheet name length limit
                     sheet_name = sheet_name[:31]
             
@@ -134,12 +146,13 @@ def main():
         raw_files = [f for f in csv_files if 'raw_prices' in f]
         for file in raw_files:
             # Get sheet name from file name
-            if 'local_CEST' in file:
+            file_basename = os.path.basename(file)  # Get just the filename without path
+            if 'local_CEST' in file_basename:
                 sheet_name = 'Raw Prices (Local Time)'
-            elif 'utc' in file:
+            elif 'utc' in file_basename:
                 sheet_name = 'Raw Prices (UTC)'
             else:
-                sheet_name = file.replace('.csv', '')
+                sheet_name = file_basename.replace('.csv', '')
                 if len(sheet_name) > 31:  # Excel sheet name length limit
                     sheet_name = sheet_name[:31]
             

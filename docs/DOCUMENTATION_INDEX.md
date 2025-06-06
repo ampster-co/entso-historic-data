@@ -5,7 +5,7 @@
 | Document | Purpose | Target Audience |
 |----------|---------|-----------------|
 | [Quick Reference Guide](QUICK_REFERENCE_GUIDE.md) | Key findings and action items | Everyone - Start here! |
-| [README](README.md) | Original project setup and data retrieval | Developers |
+| [README](../README.md) | Original project setup and data retrieval | Developers |
 | [Project Documentation](PROJECT_DOCUMENTATION.md) | Comprehensive project overview | Project managers, stakeholders |
 | [Business Analysis](PRICE_ANALYSIS_DOCUMENTATION.md) | Strategic insights and ROI | Business decision makers |
 | [Technical Implementation](TECHNICAL_IMPLEMENTATION_GUIDE.md) | Code examples and architecture | Developers, engineers |
@@ -19,32 +19,38 @@
 
 ### Existing Users
 1. See **[Project Documentation](PROJECT_DOCUMENTATION.md)** for complete project overview
-2. Reference **[README](README.md)** for data retrieval and setup instructions
+2. Reference **[README](../README.md)** for data retrieval and setup instructions
 
 ## 📁 File Structure
 
 ```
 Documentation Files:
-├── DOCUMENTATION_INDEX.md              # This navigation guide
-├── QUICK_REFERENCE_GUIDE.md            # Key findings summary
-├── README.md                           # Original project documentation  
-├── PROJECT_DOCUMENTATION.md            # Comprehensive project overview
-├── PRICE_ANALYSIS_DOCUMENTATION.md     # Business insights and strategy
-└── TECHNICAL_IMPLEMENTATION_GUIDE.md   # Implementation details
+├── docs/
+│   ├── DOCUMENTATION_INDEX.md              # This navigation guide
+│   ├── QUICK_REFERENCE_GUIDE.md            # Key findings summary
+│   ├── PROJECT_DOCUMENTATION.md            # Comprehensive project overview
+│   ├── PRICE_ANALYSIS_DOCUMENTATION.md     # Business insights and strategy
+│   └── TECHNICAL_IMPLEMENTATION_GUIDE.md   # Implementation details
+├── README.md                               # Original project documentation  
 
 Source Code:
-├── src/
-│   ├── retrieve_price_data.py          # Data acquisition from ENTSO-E
-│   └── price_pattern_analysis.py       # Price pattern analysis engine
+├── src/                                    # Data fetching and retrieval
+│   ├── entso_py_retriever.py              # Data acquisition from ENTSO-E
+│   ├── export_to_excel.py                 # Excel export functionality
+│   ├── run_entsoe_py.py                   # Main execution script
+│   └── test_*.py                          # Test files
+├── analysis/                               # Price pattern analysis
+│   └── price_pattern_analysis.py          # Price pattern analysis engine
 
 Data Files:
-├── nl_raw_prices_local_CEST.csv        # Raw hourly price data (26,280 hours)
-└── nl_price_metrics_local_CEST.csv     # Daily aggregated metrics
+├── data/
+│   ├── nl_raw_prices_local_CEST.csv       # Raw hourly price data (26,280 hours)
+│   └── nl_price_metrics_local_CEST.csv    # Daily aggregated metrics
 
 Configuration:
-├── requirements.txt                     # Python dependencies
-├── country_config.json                 # ENTSO-E country configurations
-└── .env                                # API keys (create this file)
+├── requirements.txt                        # Python dependencies
+├── country_config.json                    # ENTSO-E country configurations
+└── .env                                   # API keys (create this file)
 ```
 
 ## 🎯 Use Cases by Role

@@ -48,7 +48,7 @@ USAGE:
 ======
 python price_pattern_analysis.py
 
-The script expects 'nl_raw_prices_local_CEST.csv' in the current directory.
+The script expects 'nl_raw_prices_local_CEST.csv' in the '../data/' directory.
 
 DEPENDENCIES:
 ============
@@ -107,7 +107,24 @@ def load_and_prepare_data(file_path):
     Note:
         The datetime column is parsed with UTC awareness to handle timezone-aware timestamps.
     """
-    df = pd.read_csv(file_path)
+    import os
+    
+    # Try different possible paths
+    possible_paths = [
+        file_path,
+        os.path.join('data', 'nl_raw_prices_local_CEST.csv'),
+        os.path.join('..', 'data', 'nl_raw_prices_local_CEST.csv'),
+        'nl_raw_prices_local_CEST.csv'
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            print(f"Loading data from: {path}")
+            df = pd.read_csv(path)
+            break
+    else:
+        raise FileNotFoundError(f"Could not find data file. Tried paths: {possible_paths}")
+    
     df['datetime'] = pd.to_datetime(df['datetime'], utc=True)
     df['hour'] = df['datetime'].dt.hour
     df['month'] = df['datetime'].dt.month
@@ -503,7 +520,7 @@ def main():
     print("=" * 50)
     
     # Load and validate data
-    df = load_and_prepare_data('nl_raw_prices_local_CEST.csv')
+    df = load_and_prepare_data('data/nl_raw_prices_local_CEST.csv')
     
     print(f"Data period: {df['datetime'].min()} to {df['datetime'].max()}")
     print(f"Total hours analyzed: {len(df):,}")

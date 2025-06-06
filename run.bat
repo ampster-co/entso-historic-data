@@ -106,13 +106,13 @@ goto :eof
 :option1
 call :get_api_key
 call :ask_local_timezone
-python entso_py_retriever.py --countries NL --years 3 %local_time_flag%
+python src/entso_py_retriever.py --countries NL --years 3 %local_time_flag%
 goto continue
 
 :option2
 call :get_api_key
 call :ask_local_timezone
-python entso_py_retriever.py --countries NL --years 5 %local_time_flag%
+python src/entso_py_retriever.py --countries NL --years 5 %local_time_flag%
 goto continue
 
 :option3
@@ -120,7 +120,7 @@ call :get_api_key
 call :get_countries
 call :ask_combined_files
 call :ask_local_timezone
-python entso_py_retriever.py --countries %countries% --years 3 %combined_flag% %local_time_flag%
+python src/entso_py_retriever.py --countries %countries% --years 3 %combined_flag% %local_time_flag%
 goto continue
 
 :option4
@@ -128,7 +128,7 @@ call :get_api_key
 call :get_countries
 call :ask_combined_files
 call :ask_local_timezone
-python entso_py_retriever.py --countries %countries% --years 5 %combined_flag% %local_time_flag%
+python src/entso_py_retriever.py --countries %countries% --years 5 %combined_flag% %local_time_flag%
 goto continue
 
 :option5
@@ -137,7 +137,7 @@ call :get_countries
 call :get_date_range
 call :ask_combined_files
 call :ask_local_timezone
-python entso_py_retriever.py --countries %countries% --start-date %start_date% --end-date %end_date% %combined_flag% %local_time_flag%
+python src/entso_py_retriever.py --countries %countries% --start-date %start_date% --end-date %end_date% %combined_flag% %local_time_flag%
 goto continue
 
 :option6
@@ -148,7 +148,7 @@ echo How many years of data do you want to retrieve?
 set /p years=^> 
 echo.
 call :ask_combined_files
-python entso_py_retriever.py --countries %countries% --years %years% %combined_flag% --local-time
+python src/entso_py_retriever.py --countries %countries% --years %years% %combined_flag% --local-time
 goto continue
 
 :continue
@@ -159,7 +159,7 @@ goto menu
 :export_excel
 echo.
 echo Exporting data to Excel format...
-python export_to_excel.py
+python src/export_to_excel.py
 goto continue
 
 :exit

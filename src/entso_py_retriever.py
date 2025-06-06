@@ -530,9 +530,12 @@ def process_country_data(country_code: str, api_key: str, start_date: datetime, 
     # Calculate metrics
     daily_metrics = calculate_daily_metrics(df, country_tax_configs=country_tax_configs)
     
+    # Create data directory if it doesn't exist
+    os.makedirs('data', exist_ok=True)
+    
     # Export to CSV with timezone in filename
-    metrics_filename = f"{country_code.lower()}_price_metrics_{timezone_suffix}.csv"
-    raw_filename = f"{country_code.lower()}_raw_prices_{timezone_suffix}.csv"
+    metrics_filename = f"data/{country_code.lower()}_price_metrics_{timezone_suffix}.csv"
+    raw_filename = f"data/{country_code.lower()}_raw_prices_{timezone_suffix}.csv"
     
     export_to_csv(daily_metrics, metrics_filename)
     export_to_csv(df, raw_filename)
@@ -616,12 +619,15 @@ def main():
             if use_local_time:
                 timezone_suffix = "local_mixed"  # Since we have multiple countries with different timezones
             
+            # Create data directory if it doesn't exist
+            os.makedirs('data', exist_ok=True)
+            
             if all_metrics:
                 # Combine metrics
                 combined_metrics = pd.concat(all_metrics)
                 
                 # Export combined metrics
-                combined_metrics_filename = f"combined_price_metrics_{timezone_suffix}.csv"
+                combined_metrics_filename = f"data/combined_price_metrics_{timezone_suffix}.csv"
                 export_to_csv(combined_metrics, combined_metrics_filename)
             
             if all_raw_data:
@@ -629,7 +635,7 @@ def main():
                 combined_raw = pd.concat(all_raw_data)
                 
                 # Export combined raw data
-                combined_raw_filename = f"combined_raw_prices_{timezone_suffix}.csv"
+                combined_raw_filename = f"data/combined_raw_prices_{timezone_suffix}.csv"
                 export_to_csv(combined_raw, combined_raw_filename)
         
         logger.info("Data retrieval and processing completed successfully")

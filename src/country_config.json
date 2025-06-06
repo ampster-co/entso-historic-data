@@ -1,0 +1,63 @@
+{
+  "NL": {
+    "domain_code": "10YNL----------L",
+    "timezone": "Europe/Amsterdam",
+    "energy_tax": 0.1228,
+    "renewable_energy_tax": 0.001,
+    "vat_rate": 0.21,
+    "currency": "EUR"
+  },
+  "BE": {
+    "domain_code": "10YBE----------2",
+    "timezone": "Europe/Brussels",
+    "energy_tax": 0.10,
+    "renewable_energy_tax": 0.002,
+    "vat_rate": 0.20,
+    "currency": "EUR"
+  },
+  "FR": {
+    "domain_code": "10YFR-RTE------C",
+    "timezone": "Europe/Paris",
+    "energy_tax": 0.12,
+    "renewable_energy_tax": 0.002,
+    "vat_rate": 0.20,
+    "currency": "EUR"
+  },
+  "AT": {
+    "domain_code": "10YAT-APG------L",
+    "timezone": "Europe/Vienna",
+    "energy_tax": 0.11,
+    "renewable_energy_tax": 0.0015,
+    "vat_rate": 0.21,
+    "currency": "EUR"
+  },
+  "AL": { "domain_code": "10YAL-KESH-----5", "timezone": "Europe/Tirane" },
+  "BA": { "domain_code": "10YBA-JPCC-----D", "timezone": "Europe/Sarajevo" },
+  "BG": { "domain_code": "10YCA-BULGARIA-R", "timezone": "Europe/Sofia" },
+  "CH": { "domain_code": "10YCH-SWISSGRIDZ", "timezone": "Europe/Zurich" },
+  "CZ": { "domain_code": "10YCZ-CEPS-----N", "timezone": "Europe/Prague" },
+  "DE": { "domain_code": "10Y1001A1001A83F", "timezone": "Europe/Berlin" },
+  "DK": { "domain_code": "10Y1001A1001A65H", "timezone": "Europe/Copenhagen" },
+  "EE": { "domain_code": "10Y1001A1001A39I", "timezone": "Europe/Tallinn" },
+  "ES": { "domain_code": "10YES-REE------0", "timezone": "Europe/Madrid" },
+  "FI": { "domain_code": "10YFI-1--------U", "timezone": "Europe/Helsinki" },
+  "GB": { "domain_code": "10YGB----------A", "timezone": "Europe/London" },
+  "GR": { "domain_code": "10YGR-HTSO-----Y", "timezone": "Europe/Athens" },
+  "HR": { "domain_code": "10YHR-HEP------M", "timezone": "Europe/Zagreb" },
+  "HU": { "domain_code": "10YHU-MAVIR----U", "timezone": "Europe/Budapest" },
+  "IE": { "domain_code": "10YIE-1001A00010", "timezone": "Europe/Dublin" },
+  "IT": { "domain_code": "10YIT-GRTN-----B", "timezone": "Europe/Rome" },
+  "LT": { "domain_code": "10YLT-1001A0008Q", "timezone": "Europe/Vilnius" },
+  "LU": { "domain_code": "10YLU-CEGEDEL-NQ", "timezone": "Europe/Luxembourg" },
+  "LV": { "domain_code": "10YLV-1001A00074", "timezone": "Europe/Riga" },
+  "ME": { "domain_code": "10YCS-CG-TSO---S", "timezone": "Europe/Podgorica" },
+  "MK": { "domain_code": "10YMK-MEPSO----8", "timezone": "Europe/Skopje" },
+  "NO": { "domain_code": "10YNO-0--------C", "timezone": "Europe/Oslo" },
+  "PL": { "domain_code": "10YPL-AREA-----S", "timezone": "Europe/Warsaw" },
+  "PT": { "domain_code": "10YPT-REN------W", "timezone": "Europe/Lisbon" },
+  "RO": { "domain_code": "10YRO-TEL------P", "timezone": "Europe/Bucharest" },
+  "RS": { "domain_code": "10YCS-SERBIATSOV", "timezone": "Europe/Belgrade" },
+  "SE": { "domain_code": "10YSE-1--------K", "timezone": "Europe/Stockholm" },
+  "SI": { "domain_code": "10YSI-ELES-----O", "timezone": "Europe/Ljubljana" },
+  "SK": { "domain_code": "10YSK-SEPS-----K", "timezone": "Europe/Bratislava" }
+}
