@@ -176,6 +176,12 @@ def should_use_local_time() -> bool:
     
     return args.local_time
 
+def should_use_utc_time() -> bool:
+    parser = argparse.ArgumentParser(description='Retrieve ENTSO-E historic price data')
+    parser.add_argument('--utc', action='store_true', help='Use UTC timezone for all data')
+    args, _ = parser.parse_known_args()
+    return args.utc
+
 def get_date_range() -> Tuple[datetime, datetime]:
     """
     Get the date range for data retrieval from command line arguments.
@@ -574,12 +580,17 @@ def main():
     else:
         logger.info("Only individual country files will be created")
     
-    # Check if local timezone should be used
+    # Check if local timezone or UTC should be used
     use_local_time = should_use_local_time()
-    if use_local_time:
-        logger.info("Using local timezone for each country")
-    else:
-        logger.info("Using UTC timezone for all data")
+    use_utc_time = should_use_utc_time()
+    if not use_local_time and not use_utc_time:
+        logger.error("You must specify either --local-time or --utc to process data. No default will be used.")
+        print("Error: You must specify either --local-time or --utc to process data. No default will be used.")
+        sys.exit(1)
+    if use_local_time and use_utc_time:
+        logger.error("Cannot specify both --local-time and --utc. Please choose one.")
+        print("Error: Cannot specify both --local-time and --utc. Please choose one.")
+        sys.exit(1)
     
     try:
         all_metrics = []

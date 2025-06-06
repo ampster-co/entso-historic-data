@@ -19,7 +19,6 @@ from datetime import datetime, timedelta
 import logging
 import dotenv
 from entso_py_retriever import (
-    COUNTRY_CODES,
     get_api_key,
     get_countries,
     get_date_range,
@@ -27,6 +26,7 @@ from entso_py_retriever import (
     calculate_daily_metrics,
     export_to_csv
 )
+import subprocess
 
 # Configure logging
 logging.basicConfig(
@@ -58,18 +58,15 @@ class TestEntsoeRetriever(unittest.TestCase):
     
     def test_country_codes(self):
         """
-        Test that country codes are valid.
+        Test that country codes are valid and config loads correctly.
         """
-        logger.info("Testing country codes...")
-        
-        # Check that COUNTRY_CODES is not empty
-        self.assertGreater(len(COUNTRY_CODES), 0, "COUNTRY_CODES should not be empty")
-        
-        # Check that NL is in COUNTRY_CODES
-        self.assertIn('NL', COUNTRY_CODES, "NL should be in COUNTRY_CODES")
-        
-        # Check that the domain code for NL is correct
-        self.assertEqual(COUNTRY_CODES['NL'], '10YNL----------L', "Domain code for NL is incorrect")
+        import json
+        config_path = os.path.join(os.path.dirname(__file__), 'country_config.json')
+        with open(config_path, 'r') as f:
+            country_config = json.load(f)
+        self.assertGreater(len(country_config), 0, "country_config should not be empty")
+        self.assertIn('NL', country_config, "NL should be in country_config")
+        self.assertEqual(country_config['NL']['domain_code'], '10YNL----------L', "Domain code for NL is incorrect")
         
         logger.info("Country codes test passed")
     
@@ -78,30 +75,28 @@ class TestEntsoeRetriever(unittest.TestCase):
         Test that get_countries returns the correct countries.
         """
         logger.info("Testing get_countries...")
-        
+        import json
+        config_path = os.path.join(os.path.dirname(__file__), 'country_config.json')
+        with open(config_path, 'r') as f:
+            country_config = json.load(f)
         # Test with required countries argument
         sys.argv = ['test_entso_retriever.py', '--countries', 'NL', '--years', '1']
-        countries = get_countries()
+        countries = get_countries(country_config=country_config)
         self.assertEqual(countries, ['NL'], "Country should be NL")
-        
         # Test with multiple countries
         sys.argv = ['test_entso_retriever.py', '--countries', 'NL,DE,FR', '--years', '1']
-        countries = get_countries()
+        countries = get_countries(country_config=country_config)
         self.assertEqual(countries, ['NL', 'DE', 'FR'], "Countries should be NL, DE, FR")
-        
         # Test with invalid country code
         sys.argv = ['test_entso_retriever.py', '--countries', 'XX', '--years', '1']
         with self.assertRaises(SystemExit):
-            countries = get_countries()
-        
+            countries = get_countries(country_config=country_config)
         # Test with no countries provided
         sys.argv = ['test_entso_retriever.py', '--years', '1']
         with self.assertRaises(SystemExit):
-            countries = get_countries()
-        
+            countries = get_countries(country_config=country_config)
         # Reset arguments
         sys.argv = ['test_entso_retriever.py', '--countries', 'NL', '--years', '1']
-        
         logger.info("get_countries test passed")
     
     def test_get_date_range(self):
@@ -159,13 +154,17 @@ class TestEntsoeRetriever(unittest.TestCase):
         if not self.api_key:
             logger.warning("Skipping API connection test: No API key provided")
             self.skipTest("No API key provided")
-        
+        import json
+        config_path = os.path.join(os.path.dirname(__file__), 'country_config.json')
+        with open(config_path, 'r') as f:
+            country_config = json.load(f)
         # Test retrieving data for a short period
         df = retrieve_day_ahead_prices(
             self.start_date,
             self.end_date,
             self.api_key,
-            self.country_code
+            self.country_code,
+            country_config
         )
         
         # Check that the DataFrame is not empty
@@ -271,6 +270,46 @@ class TestEntsoeRetriever(unittest.TestCase):
         os.remove(test_filename)
         
         logger.info("CSV export test passed")
+    
+    def test_timezone_flag_required(self):
+        """
+        Test that the script exits with an error if neither --local-time nor --utc is provided.
+        """
+        result = subprocess.run([
+            sys.executable, 'entso_py_retriever.py', '--countries', 'NL', '--years', '1'
+        ], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("You must specify either --local-time or --utc", result.stdout + result.stderr)
+    
+    def test_tax_columns_presence(self):
+        """
+        Test that tax-inclusive columns are only present for countries with tax fields in config.
+        """
+        # Simulate metrics DataFrame for a country with tax fields
+        df_with_tax = pd.DataFrame({
+            'date': ['2022-01-01'],
+            'country': ['NL'],
+            'min_price_mwh': [10],
+            'max_price_mwh': [100],
+            'weighted_avg_mwh': [50],
+            'min_price_kwh': [0.01],
+            'max_price_kwh': [0.1],
+            'weighted_avg_kwh': [0.05],
+            'weighted_avg_kwh_all_in_price': [0.2]
+        })
+        self.assertIn('weighted_avg_kwh_all_in_price', df_with_tax.columns)
+        # Simulate metrics DataFrame for a stub country (no tax fields)
+        df_stub = pd.DataFrame({
+            'date': ['2022-01-01'],
+            'country': ['AL'],
+            'min_price_mwh': [10],
+            'max_price_mwh': [100],
+            'weighted_avg_mwh': [50],
+            'min_price_kwh': [0.01],
+            'max_price_kwh': [0.1],
+            'weighted_avg_kwh': [0.05]
+        })
+        self.assertNotIn('weighted_avg_kwh_all_in_price', df_stub.columns)
 
 def run_tests():
     """

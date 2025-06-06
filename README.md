@@ -74,6 +74,12 @@ If any of the tax fields are missing for a country, tax-inclusive columns (such 
 
 The list of supported countries is dynamic and based on the keys present in `country_config.json`. You can add or remove countries by editing this file. Countries with only `domain_code` and `timezone` will still allow data fetching, but tax-inclusive columns will be omitted.
 
+## Output Columns
+
+- Daily price metrics CSVs will include columns for min, max, and weighted average prices in both EUR/MWh and EUR/kWh.
+- If tax fields are present for a country, a `weighted_avg_kwh_all_in_price` column will be included, representing the all-in price based on the weighted average.
+- If tax fields are missing, this column will not be present for that country.
+
 ## Usage
 
 ### Command Line Interface
@@ -128,34 +134,6 @@ The `{timezone}` in the filename indicates whether the data is in UTC or local t
 - When using default UTC time: `nl_price_metrics_utc.csv`
 - When using local time: `nl_price_metrics_local_CEST.csv` (timezone abbreviation may vary)
 
-- Daily price metrics CSVs will include columns for min, max, and weighted average prices in both EUR/MWh and EUR/kWh.
-- If tax fields are present for a country, a `weighted_avg_kwh_all_in_price` column will be included, representing the all-in price based on the weighted average.
-- If tax fields are missing, this column will not be present for that country.
-
-### Excel Export
-
-The project also includes a script to export the CSV data to Excel format:
-
-```bash
-# Export all CSV files to Excel
-python export_to_excel.py
-```
-
-This script:
-- Creates a single Excel file with multiple sheets
-- Includes a summary sheet with information about the data
-- Formats the data for better readability
-- Handles large datasets by limiting the number of rows per sheet
-- Includes country codes in the filename (e.g., `entso_price_data_NL_20250605_152855.xlsx`)
-- Automatically detects which countries are included in the data
-
-The Excel file contains the following sheets:
-- Summary: Overview of the data and sheet contents
-- Daily Metrics (Local Time): Min, max, and weighted average prices per day in local timezone
-- Daily Metrics (UTC): Min, max, and weighted average prices per day in UTC timezone
-- Raw Prices (Local Time): Hourly price data in local timezone (limited to 10,000 rows)
-- Raw Prices (UTC): Hourly price data in UTC timezone (limited to 10,000 rows)
-
 ## Timezone Handling
 
 By default, all timestamps are in UTC timezone, which is the standard for energy market data. However, you can use the `--local-time` flag to convert timestamps to the local timezone of each country:
@@ -187,6 +165,8 @@ You can provide the API key in one of the following ways:
 3. `.env` file with `ENTSOE_API_KEY=YOUR_API_KEY`
 
 ## Usage
+
+**You must specify either `--local-time` or `--utc` when running the script. If neither is provided, the script will exit with an error.**
 
 Run the retriever as before. The script will automatically use the configuration in `country_config.json` for all country-specific logic.
 
