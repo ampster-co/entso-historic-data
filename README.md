@@ -82,6 +82,31 @@ The list of supported countries is dynamic and based on the keys present in `cou
 
 ## Usage
 
+**You must specify either `--local-time` or `--utc` when running the script. If neither is provided, the script will exit with an error.**
+
+### Examples:
+
+- Retrieve data for Netherlands (last 3 years, local time):
+  ```sh
+  python entso_py_retriever.py --api-key YOUR_API_KEY --countries NL --local-time --years 3
+  ```
+- Retrieve data for multiple countries with local timezone:
+  ```sh
+  python entso_py_retriever.py --api-key YOUR_API_KEY --countries NL,DE,FR --local-time --years 3
+  ```
+- Retrieve data for a specific date range in UTC:
+  ```sh
+  python entso_py_retriever.py --api-key YOUR_API_KEY --countries NL --utc --start-date 2022-01-01 --end-date 2022-12-31
+  ```
+- Retrieve data for the last N years in UTC:
+  ```sh
+  python entso_py_retriever.py --api-key YOUR_API_KEY --countries NL --utc --years 5
+  ```
+- Show this help message:
+  ```sh
+  python entso_py_retriever.py --help
+  ```
+
 ### Command Line Interface
 
 ```bash
