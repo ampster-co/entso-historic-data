@@ -110,20 +110,20 @@ The list of supported countries is dynamic and based on the keys present in `cou
 ### Command Line Interface
 
 ```bash
-# Retrieve data for Netherlands (last 3 years)
-python entso_py_retriever.py --countries NL --years 3
+# Retrieve data for Netherlands (last 3 years, UTC)
+python entso_py_retriever.py --countries NL --years 3 --utc
 
 # Retrieve data for Netherlands with local timezone
 python entso_py_retriever.py --countries NL --years 3 --local-time
 
-# Retrieve data for multiple countries (last 3 years)
-python entso_py_retriever.py --countries NL,DE,FR --years 3
+# Retrieve data for multiple countries (last 3 years, UTC)
+python entso_py_retriever.py --countries NL,DE,FR --years 3 --utc
 
-# Retrieve data for multiple countries with combined files
-python entso_py_retriever.py --countries NL,DE,FR --years 3 --combined
+# Retrieve data for multiple countries with combined files (UTC)
+python entso_py_retriever.py --countries NL,DE,FR --years 3 --combined --utc
 
-# Retrieve data for a specific date range
-python entso_py_retriever.py --countries NL --start-date 2020-01-01 --end-date 2022-12-31
+# Retrieve data for a specific date range (UTC)
+python entso_py_retriever.py --countries NL --start-date 2020-01-01 --end-date 2022-12-31 --utc
 
 # Show help message
 python entso_py_retriever.py --help
