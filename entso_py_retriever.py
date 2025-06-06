@@ -52,7 +52,6 @@ import dotenv
 import sys
 import json
 from typing import Dict, List, Tuple, Optional, Any
-from entsoe import EntsoePandasClient
 
 # Configure logging
 logging.basicConfig(
@@ -60,80 +59,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-# Country code mapping
-COUNTRY_CODES = {
-    'AL': '10YAL-KESH-----5',  # Albania
-    'AT': '10YAT-APG------L',  # Austria
-    'BA': '10YBA-JPCC-----D',  # Bosnia and Herzegovina
-    'BE': '10YBE----------2',  # Belgium
-    'BG': '10YCA-BULGARIA-R',  # Bulgaria
-    'CH': '10YCH-SWISSGRIDZ',  # Switzerland
-    'CZ': '10YCZ-CEPS-----N',  # Czech Republic
-    'DE': '10Y1001A1001A83F',  # Germany
-    'DK': '10Y1001A1001A65H',  # Denmark
-    'EE': '10Y1001A1001A39I',  # Estonia
-    'ES': '10YES-REE------0',  # Spain
-    'FI': '10YFI-1--------U',  # Finland
-    'FR': '10YFR-RTE------C',  # France
-    'GB': '10YGB----------A',  # United Kingdom
-    'GR': '10YGR-HTSO-----Y',  # Greece
-    'HR': '10YHR-HEP------M',  # Croatia
-    'HU': '10YHU-MAVIR----U',  # Hungary
-    'IE': '10YIE-1001A00010',  # Ireland
-    'IT': '10YIT-GRTN-----B',  # Italy
-    'LT': '10YLT-1001A0008Q',  # Lithuania
-    'LU': '10YLU-CEGEDEL-NQ',  # Luxembourg
-    'LV': '10YLV-1001A00074',  # Latvia
-    'ME': '10YCS-CG-TSO---S',  # Montenegro
-    'MK': '10YMK-MEPSO----8',  # North Macedonia
-    'NL': '10YNL----------L',  # Netherlands
-    'NO': '10YNO-0--------C',  # Norway
-    'PL': '10YPL-AREA-----S',  # Poland
-    'PT': '10YPT-REN------W',  # Portugal
-    'RO': '10YRO-TEL------P',  # Romania
-    'RS': '10YCS-SERBIATSOV',  # Serbia
-    'SE': '10YSE-1--------K',  # Sweden
-    'SI': '10YSI-ELES-----O',  # Slovenia
-    'SK': '10YSK-SEPS-----K',  # Slovakia
-}
-
-# Country timezone mapping
-COUNTRY_TIMEZONES = {
-    'AL': 'Europe/Tirane',     # Albania
-    'AT': 'Europe/Vienna',     # Austria
-    'BA': 'Europe/Sarajevo',   # Bosnia and Herzegovina
-    'BE': 'Europe/Brussels',   # Belgium
-    'BG': 'Europe/Sofia',      # Bulgaria
-    'CH': 'Europe/Zurich',     # Switzerland
-    'CZ': 'Europe/Prague',     # Czech Republic
-    'DE': 'Europe/Berlin',     # Germany
-    'DK': 'Europe/Copenhagen', # Denmark
-    'EE': 'Europe/Tallinn',    # Estonia
-    'ES': 'Europe/Madrid',     # Spain
-    'FI': 'Europe/Helsinki',   # Finland
-    'FR': 'Europe/Paris',      # France
-    'GB': 'Europe/London',     # United Kingdom
-    'GR': 'Europe/Athens',     # Greece
-    'HR': 'Europe/Zagreb',     # Croatia
-    'HU': 'Europe/Budapest',   # Hungary
-    'IE': 'Europe/Dublin',     # Ireland
-    'IT': 'Europe/Rome',       # Italy
-    'LT': 'Europe/Vilnius',    # Lithuania
-    'LU': 'Europe/Luxembourg', # Luxembourg
-    'LV': 'Europe/Riga',       # Latvia
-    'ME': 'Europe/Podgorica',  # Montenegro
-    'MK': 'Europe/Skopje',     # North Macedonia
-    'NL': 'Europe/Amsterdam',  # Netherlands
-    'NO': 'Europe/Oslo',       # Norway
-    'PL': 'Europe/Warsaw',     # Poland
-    'PT': 'Europe/Lisbon',     # Portugal
-    'RO': 'Europe/Bucharest',  # Romania
-    'RS': 'Europe/Belgrade',   # Serbia
-    'SE': 'Europe/Stockholm',  # Sweden
-    'SI': 'Europe/Ljubljana',  # Slovenia
-    'SK': 'Europe/Bratislava', # Slovakia
-}
 
 def print_usage():
     """
@@ -199,42 +124,30 @@ def get_api_key() -> str:
         print_usage()
         sys.exit(1)
 
-def get_countries() -> List[str]:
+def get_countries(country_config=None) -> List[str]:
     """
     Get the list of countries to retrieve data for from command line arguments.
-    
-    Returns:
-        List[str]: List of country codes
-    
-    Raises:
-        SystemExit: If no countries are provided or if all provided countries are invalid
+    Uses country_config for validation.
     """
     parser = argparse.ArgumentParser(description='Retrieve ENTSO-E historic price data')
     parser.add_argument('--countries', type=str, help='Comma-separated list of country codes (e.g., NL,DE,FR)')
     args, _ = parser.parse_known_args()
-    
     if not args.countries:
         logger.error("No countries provided. Please provide at least one country code via --countries argument.")
         print_usage()
         sys.exit(1)
-    
-    # Split by comma and strip whitespace
     countries = [country.strip().upper() for country in args.countries.split(',')]
-    
-    # Validate country codes
     valid_countries = []
     for country in countries:
-        if country in COUNTRY_CODES:
+        if country_config and country in country_config:
             valid_countries.append(country)
         else:
             logger.warning(f"Invalid country code: {country}. Skipping.")
-    
     if not valid_countries:
         logger.error("No valid country codes provided. Please provide at least one valid country code.")
-        logger.error("Available country codes: " + ", ".join(sorted(COUNTRY_CODES.keys())))
+        logger.error("Available country codes: " + ", ".join(sorted(country_config.keys())))
         print_usage()
         sys.exit(1)
-    
     return valid_countries
 
 def should_create_combined_files() -> bool:
@@ -322,64 +235,40 @@ def get_date_range() -> Tuple[datetime, datetime]:
     print_usage()
     sys.exit(1)
 
-def retrieve_day_ahead_prices(start_date: datetime, end_date: datetime, api_key: str, country_code: str) -> pd.DataFrame:
+def load_country_config():
+    config_path = os.path.join(os.path.dirname(__file__), 'country_config.json')
+    with open(config_path, 'r') as f:
+        return json.load(f)
+
+def retrieve_day_ahead_prices(start_date: datetime, end_date: datetime, api_key: str, country_code: str, country_config: dict) -> pd.DataFrame:
     """
     Retrieve day-ahead prices from ENTSO-E API for the specified time period and country.
-    
-    This function queries the ENTSO-E API for day-ahead electricity prices
-    for the specified country within the specified time period. It handles the
-    conversion of the API response to a pandas DataFrame.
-    
-    Args:
-        start_date (datetime): Start date for data retrieval
-        end_date (datetime): End date for data retrieval
-        api_key (str): ENTSO-E API key
-        country_code (str): Country code (e.g., 'NL' for Netherlands)
-        
-    Returns:
-        pd.DataFrame: DataFrame with day-ahead price data containing columns:
-            - datetime: Timestamp of the price data
-            - price: Electricity price in EUR/MWh
-            - country: Country code
+    Uses domain_code from country_config.json.
     """
     logger.info(f"Retrieving day-ahead prices for {country_code} from {start_date.date()} to {end_date.date()}")
-    
     try:
-        # Initialize client
+        from entsoe import EntsoePandasClient
         client = EntsoePandasClient(api_key=api_key)
-        
-        # Get the domain code for the country
-        domain_code = COUNTRY_CODES.get(country_code)
-        if not domain_code:
-            logger.error(f"Invalid country code: {country_code}")
-            return pd.DataFrame()
-        
-        # Retrieve day-ahead prices
+        domain_code = country_config[country_code]['domain_code']
         prices = client.query_day_ahead_prices(
-            country_code=country_code,
+            domain_code,
             start=pd.Timestamp(start_date).tz_localize('UTC'),
             end=pd.Timestamp(end_date).tz_localize('UTC')
         )
-        
-        # Convert to DataFrame
         if isinstance(prices, pd.Series):
             df = prices.to_frame(name='price')
             df.reset_index(inplace=True)
             df.rename(columns={'index': 'datetime'}, inplace=True)
-            
-            # Add country column
             df['country'] = country_code
-            
             return df
         else:
             logger.error(f"Unexpected result format from entsoe-py client for {country_code}")
             return pd.DataFrame()
-    
     except Exception as e:
         logger.error(f"Error retrieving day-ahead prices for {country_code}: {str(e)}")
         return pd.DataFrame()
 
-def retrieve_data_in_chunks(start_date: datetime, end_date: datetime, api_key: str, country_code: str, chunk_days: int = 30) -> pd.DataFrame:
+def retrieve_data_in_chunks(start_date: datetime, end_date: datetime, api_key: str, country_code: str, country_config: dict, chunk_days: int = 30) -> pd.DataFrame:
     """
     Retrieve data from ENTSO-E API in chunks to handle API limitations.
     
@@ -403,17 +292,14 @@ def retrieve_data_in_chunks(start_date: datetime, end_date: datetime, api_key: s
     while current_start < end_date:
         current_end = min(current_start + timedelta(days=chunk_days), end_date)
         
-        # Get day-ahead prices for this chunk
-        df = retrieve_day_ahead_prices(current_start, current_end, api_key, country_code)
+        df = retrieve_day_ahead_prices(current_start, current_end, api_key, country_code, country_config)
         if not df.empty:
             dfs.append(df)
         
-        # Move to next chunk
         current_start = current_end
         
         # Sleep to avoid hitting API rate limits
         time.sleep(1)
-    # Combine all chunks
     if dfs:
         return pd.concat(dfs).reset_index(drop=True)
     else:
@@ -445,7 +331,7 @@ def normalize_to_utc(df: pd.DataFrame) -> pd.DataFrame:
     
     return df_utc
 
-def convert_to_local_timezone(df: pd.DataFrame, country_code: str) -> pd.DataFrame:
+def convert_to_local_timezone(df: pd.DataFrame, country_code: str, country_config: dict) -> pd.DataFrame:
     """
     Convert timestamps in DataFrame to local timezone for the specified country.
     
@@ -459,8 +345,7 @@ def convert_to_local_timezone(df: pd.DataFrame, country_code: str) -> pd.DataFra
     if df.empty:
         return df
     
-    # Get the timezone for the country
-    timezone = COUNTRY_TIMEZONES.get(country_code, 'UTC')
+    timezone = country_config[country_code]['timezone']
     logger.info(f"Converting timestamps for {country_code} to {timezone}")
     
     # Make a copy to avoid modifying the original DataFrame
@@ -576,7 +461,7 @@ def export_to_csv(df: pd.DataFrame, filename: str) -> None:
     df.to_csv(filename, index=False)
     logger.info(f"Data exported to {filename}")
 
-def get_timezone_suffix(country_code: str, use_local_time: bool) -> str:
+def get_timezone_suffix(country_code: str, use_local_time: bool, country_config: dict) -> str:
     """
     Get the timezone suffix for filenames based on the country and whether local time is used.
     
@@ -588,16 +473,15 @@ def get_timezone_suffix(country_code: str, use_local_time: bool) -> str:
         str: Timezone suffix for filenames
     """
     if use_local_time:
-        # Get the timezone abbreviation (e.g., CET, EET)
-        timezone_name = COUNTRY_TIMEZONES.get(country_code, 'UTC')
+        timezone_name = country_config[country_code]['timezone']
         tz = pytz.timezone(timezone_name)
         now = datetime.now(tz)
-        timezone_abbr = now.strftime('%Z')  # Get timezone abbreviation
+        timezone_abbr = now.strftime('%Z')
         return f"local_{timezone_abbr}"
     else:
         return "utc"
 
-def process_country_data(country_code: str, api_key: str, start_date: datetime, end_date: datetime, use_local_time: bool, country_tax_configs: dict = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def process_country_data(country_code: str, api_key: str, start_date: datetime, end_date: datetime, use_local_time: bool, country_tax_configs: dict = None, country_config: dict = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Process data for a specific country.
     
@@ -618,7 +502,7 @@ def process_country_data(country_code: str, api_key: str, start_date: datetime, 
     
     # Retrieve data from API
     logger.info(f"Retrieving data for {country_code} from {start_date.date()} to {end_date.date()}")
-    df = retrieve_data_in_chunks(start_date, end_date, api_key, country_code)
+    df = retrieve_data_in_chunks(start_date, end_date, api_key, country_code, country_config)
     
     if df.empty:
         logger.error(f"No data retrieved for {country_code}. Skipping.")
@@ -628,12 +512,12 @@ def process_country_data(country_code: str, api_key: str, start_date: datetime, 
     df = normalize_to_utc(df)
     
     # Get timezone suffix for filenames
-    timezone_suffix = get_timezone_suffix(country_code, use_local_time)
+    timezone_suffix = get_timezone_suffix(country_code, use_local_time, country_config)
     
     # Convert to local timezone if requested
     if use_local_time:
-        df = convert_to_local_timezone(df, country_code)
-        timezone_info = f" (using {COUNTRY_TIMEZONES.get(country_code, 'UTC')} timezone)"
+        df = convert_to_local_timezone(df, country_code, country_config)
+        timezone_info = f" (using {country_config[country_code]['timezone']} timezone)"
     else:
         timezone_info = " (using UTC timezone)"
     
@@ -674,7 +558,10 @@ def main():
     api_key = get_api_key()
     
     # Get countries
-    countries = get_countries()
+    country_config = load_country_config()
+    with open(os.path.join(os.path.dirname(__file__), 'country_config.json'), 'r') as f:
+        country_tax_configs = json.load(f)
+    countries = get_countries(country_config=country_config)
     logger.info(f"Retrieving data for countries: {', '.join(countries)}")
     
     # Get date range
@@ -694,17 +581,16 @@ def main():
     else:
         logger.info("Using UTC timezone for all data")
     
-    # Load country tax configs
-    with open(os.path.join(os.path.dirname(__file__), 'country_config.json'), 'r') as f:
-        country_tax_configs = json.load(f)
-    
     try:
         all_metrics = []
         all_raw_data = []
         
         # Process each country
         for country_code in countries:
-            metrics_df, raw_df = process_country_data(country_code, api_key, start_date, end_date, use_local_time, country_tax_configs=country_tax_configs)
+            metrics_df, raw_df = process_country_data(
+                country_code, api_key, start_date, end_date, use_local_time,
+                country_tax_configs=country_tax_configs, country_config=country_config
+            )
             
             if not metrics_df.empty:
                 all_metrics.append(metrics_df)

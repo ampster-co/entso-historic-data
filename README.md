@@ -36,6 +36,44 @@ This project retrieves historic electricity price data from the ENTSO-E Transpar
    ENTSOE_API_KEY=your_api_key_here
    ```
 
+## Configuration
+
+All country-specific metadata is now managed in `country_config.json`. This file must be present in the project root and should contain an entry for each country you wish to fetch data for.
+
+### Required fields for each country:
+- `domain_code`: ENTSO-E domain code (required)
+- `timezone`: IANA timezone string (required)
+
+### Optional fields for tax-inclusive calculations:
+- `energy_tax`: Numeric (optional)
+- `renewable_energy_tax`: Numeric (optional)
+- `vat_rate`: Numeric (optional)
+- `currency`: String (optional)
+
+If any of the tax fields are missing for a country, tax-inclusive columns (such as `weighted_avg_kwh_all_in_price`) will not be present in the output for that country.
+
+### Example country_config.json
+```json
+{
+  "NL": {
+    "domain_code": "10YNL----------L",
+    "timezone": "Europe/Amsterdam",
+    "energy_tax": 0.1228,
+    "renewable_energy_tax": 0.001,
+    "vat_rate": 0.21,
+    "currency": "EUR"
+  },
+  "DE": {
+    "domain_code": "10Y1001A1001A83F",
+    "timezone": "Europe/Berlin"
+  }
+}
+```
+
+## Supported Countries
+
+The list of supported countries is dynamic and based on the keys present in `country_config.json`. You can add or remove countries by editing this file. Countries with only `domain_code` and `timezone` will still allow data fetching, but tax-inclusive columns will be omitted.
+
 ## Usage
 
 ### Command Line Interface
@@ -90,6 +128,10 @@ The `{timezone}` in the filename indicates whether the data is in UTC or local t
 - When using default UTC time: `nl_price_metrics_utc.csv`
 - When using local time: `nl_price_metrics_local_CEST.csv` (timezone abbreviation may vary)
 
+- Daily price metrics CSVs will include columns for min, max, and weighted average prices in both EUR/MWh and EUR/kWh.
+- If tax fields are present for a country, a `weighted_avg_kwh_all_in_price` column will be included, representing the all-in price based on the weighted average.
+- If tax fields are missing, this column will not be present for that country.
+
 ### Excel Export
 
 The project also includes a script to export the CSV data to Excel format:
@@ -143,3 +185,11 @@ You can provide the API key in one of the following ways:
 1. Command line argument: `--api-key YOUR_API_KEY`
 2. Environment variable: `ENTSOE_API_KEY=YOUR_API_KEY`
 3. `.env` file with `ENTSOE_API_KEY=YOUR_API_KEY`
+
+## Usage
+
+Run the retriever as before. The script will automatically use the configuration in `country_config.json` for all country-specific logic.
+
+---
+
+For further details, see the code docstrings or contact the maintainer.
