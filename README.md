@@ -109,6 +109,24 @@ The list of supported countries is dynamic and based on the keys present in `cou
 
 **You must specify either `--local-time` or `--utc` when running the script. If neither is provided, the script will exit with an error.**
 
+### Quick Start (Recommended)
+
+For easier data retrieval, use the convenience wrapper from the root directory:
+
+```bash
+# Retrieve data for Netherlands (last 3 years, local time)
+python fetch_data.py --countries NL --local-time --years 3
+
+# Retrieve data for multiple countries with local timezone
+python fetch_data.py --countries NL,DE,FR --local-time --years 3
+
+# Retrieve data for a specific date range in UTC
+python fetch_data.py --countries NL --utc --start-date 2022-01-01 --end-date 2022-12-31
+
+# Show help message
+python fetch_data.py --help
+```
+
 ### Data Retrieval Examples:
 
 - Retrieve data for Netherlands (last 3 years, local time):
@@ -121,37 +139,37 @@ The list of supported countries is dynamic and based on the keys present in `cou
   ```
 - Retrieve data for a specific date range in UTC:
   ```sh
-  python entso_py_retriever.py --api-key YOUR_API_KEY --countries NL --utc --start-date 2022-01-01 --end-date 2022-12-31
+  python src/entso_py_retriever.py --api-key YOUR_API_KEY --countries NL --utc --start-date 2022-01-01 --end-date 2022-12-31
   ```
 - Retrieve data for the last N years in UTC:
   ```sh
-  python entso_py_retriever.py --api-key YOUR_API_KEY --countries NL --utc --years 5
+  python src/entso_py_retriever.py --api-key YOUR_API_KEY --countries NL --utc --years 5
   ```
 - Show this help message:
   ```sh
-  python entso_py_retriever.py --help
+  python src/entso_py_retriever.py --help
   ```
 
 ### Command Line Interface
 
 ```bash
 # Retrieve data for Netherlands (last 3 years, UTC)
-python entso_py_retriever.py --countries NL --years 3 --utc
+python src/entso_py_retriever.py --countries NL --years 3 --utc
 
 # Retrieve data for Netherlands with local timezone
-python entso_py_retriever.py --countries NL --years 3 --local-time
+python src/entso_py_retriever.py --countries NL --years 3 --local-time
 
 # Retrieve data for multiple countries (last 3 years, UTC)
-python entso_py_retriever.py --countries NL,DE,FR --years 3 --utc
+python src/entso_py_retriever.py --countries NL,DE,FR --years 3 --utc
 
 # Retrieve data for multiple countries with combined files (UTC)
-python entso_py_retriever.py --countries NL,DE,FR --years 3 --combined --utc
+python src/entso_py_retriever.py --countries NL,DE,FR --years 3 --combined --utc
 
 # Retrieve data for a specific date range (UTC)
-python entso_py_retriever.py --countries NL --start-date 2020-01-01 --end-date 2022-12-31 --utc
+python src/entso_py_retriever.py --countries NL --start-date 2020-01-01 --end-date 2022-12-31 --utc
 
 # Show help message
-python entso_py_retriever.py --help
+python src/entso_py_retriever.py --help
 ```
 
 ### Interactive Runner Scripts
@@ -168,28 +186,28 @@ These scripts provide a menu-based interface for retrieving data with various op
 You can also use the Python runner script for a more interactive experience:
 
 ```bash
-python run_entsoe_py.py --countries NL --years 3
+python src/run_entsoe_py.py --countries NL --years 3
 ```
 
 ## Output Files
 
-The script generates the following output files:
+The script generates the following output files in the `data/` directory:
 
-- `{country}_price_metrics_{timezone}.csv`: Daily price metrics (min, max, weighted avg) for each country
-- `{country}_raw_prices_{timezone}.csv`: Raw hourly price data for each country
-- `combined_price_metrics_{timezone}.csv`: Combined daily metrics for all countries (if --combined flag is used)
-- `combined_raw_prices_{timezone}.csv`: Combined raw hourly data for all countries (if --combined flag is used)
+- `data/{country}_price_metrics_{timezone}.csv`: Daily price metrics (min, max, weighted avg) for each country
+- `data/{country}_raw_prices_{timezone}.csv`: Raw hourly price data for each country
+- `data/combined_price_metrics_{timezone}.csv`: Combined daily metrics for all countries (if --combined flag is used)
+- `data/combined_raw_prices_{timezone}.csv`: Combined raw hourly data for all countries (if --combined flag is used)
 
 The `{timezone}` in the filename indicates whether the data is in UTC or local timezone:
-- When using default UTC time: `nl_price_metrics_utc.csv`
-- When using local time: `nl_price_metrics_local_CEST.csv` (timezone abbreviation may vary)
+- When using default UTC time: `data/nl_price_metrics_utc.csv`
+- When using local time: `data/nl_price_metrics_local_CEST.csv` (timezone abbreviation may vary)
 
 ## Timezone Handling
 
 By default, all timestamps are in UTC timezone, which is the standard for energy market data. However, you can use the `--local-time` flag to convert timestamps to the local timezone of each country:
 
 ```bash
-python entso_py_retriever.py --countries NL,DE,FR --years 3 --local-time
+python fetch_data.py --countries NL,DE,FR --years 3 --local-time
 ```
 
 This will:
