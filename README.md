@@ -195,12 +195,6 @@ You can provide the API key in one of the following ways:
 2. Environment variable: `ENTSOE_API_KEY=YOUR_API_KEY`
 3. `.env` file with `ENTSOE_API_KEY=YOUR_API_KEY`
 
-## Usage
-
-**You must specify either `--local-time` or `--utc` when running the script. If neither is provided, the script will exit with an error.**
-
-Run the retriever as before. The script will automatically use the configuration in `country_config.json` for all country-specific logic.
-
 ---
 
 For further details, see the code docstrings or contact the maintainer.
