@@ -149,6 +149,12 @@ This will:
 
 When using local time with multiple countries (with `--combined` flag), the combined files will use a 'local_mixed' suffix to indicate that they contain data from multiple timezones.
 
+- The ENTSO-E API provides all timestamps in UTC by default.
+- The script always normalizes timestamps to UTC internally to ensure consistency.
+- If you specify `--local-time`, all output files (including *_raw_prices_*) will have timestamps converted to the local timezone for each country, and a `timezone` column will be included.
+- If you specify `--utc`, all output files will have timestamps in UTC.
+- The timezone of the *_raw_prices_* data matches your chosen flag and is not always UTC.
+
 ## API Key
 
 You need an API key from the ENTSO-E Transparency Platform to use this script. You can get one by:
