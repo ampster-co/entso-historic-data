@@ -195,6 +195,31 @@ You can provide the API key in one of the following ways:
 2. Environment variable: `ENTSOE_API_KEY=YOUR_API_KEY`
 3. `.env` file with `ENTSOE_API_KEY=YOUR_API_KEY`
 
+## 📊 Price Pattern Analysis
+
+This project now includes comprehensive analysis of Dutch electricity price patterns to identify optimization opportunities for solar + battery systems. 
+
+### Analysis Documentation
+- **[Quick Reference Guide](QUICK_REFERENCE_GUIDE.md)**: Key findings and immediate action items
+- **[Project Overview](PROJECT_DOCUMENTATION.md)**: Comprehensive project documentation
+- **[Business Analysis](PRICE_ANALYSIS_DOCUMENTATION.md)**: Strategic insights and ROI calculations  
+- **[Technical Guide](TECHNICAL_IMPLEMENTATION_GUIDE.md)**: Implementation details and code examples
+
+### Key Findings
+- **Daily Arbitrage**: 0.137 EUR/kWh average spread between cheap (11 AM-2 PM) and expensive (5-8 PM) periods
+- **Solar Storage Premium**: 58.73 EUR/MWh benefit vs immediate sale during peak production
+- **Negative Prices**: 4.2% of time customers get PAID to consume electricity
+- **Battery ROI**: 15-25% annual returns with optimal dispatch strategies
+
+### Running the Analysis
+```bash
+# Install analysis dependencies
+pip install pandas matplotlib seaborn
+
+# Run comprehensive price pattern analysis
+python src/price_pattern_analysis.py
+```
+
 ---
 
-For further details, see the code docstrings or contact the maintainer.
+For further details, see the analysis documentation files or contact the maintainer.
