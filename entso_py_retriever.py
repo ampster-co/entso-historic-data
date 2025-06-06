@@ -50,6 +50,7 @@ import pytz
 import argparse
 import dotenv
 import sys
+import json
 from typing import Dict, List, Tuple, Optional, Any
 from entsoe import EntsoePandasClient
 
@@ -412,7 +413,6 @@ def retrieve_data_in_chunks(start_date: datetime, end_date: datetime, api_key: s
         
         # Sleep to avoid hitting API rate limits
         time.sleep(1)
-    
     # Combine all chunks
     if dfs:
         return pd.concat(dfs).reset_index(drop=True)
@@ -478,7 +478,7 @@ def convert_to_local_timezone(df: pd.DataFrame, country_code: str) -> pd.DataFra
     
     return df_local
 
-def calculate_daily_metrics(df: pd.DataFrame) -> pd.DataFrame:
+def calculate_daily_metrics(df: pd.DataFrame, country_tax_configs: dict = None) -> pd.DataFrame:
     """
     Calculate daily minimum, maximum, and weighted average prices.
     
@@ -521,26 +521,48 @@ def calculate_daily_metrics(df: pd.DataFrame) -> pd.DataFrame:
     min_prices = grouped['price'].min().reset_index()
     max_prices = grouped['price'].max().reset_index()
     avg_prices = grouped['price'].mean().reset_index()  # This calculates the arithmetic mean (weighted average)
-    
+
     # Merge the metrics
-    metrics = min_prices.rename(columns={'price': 'min_price'})
+    metrics = min_prices.rename(columns={'price': 'min_price_mwh'})
     metrics = metrics.merge(
-        max_prices.rename(columns={'price': 'max_price'}),
+        max_prices.rename(columns={'price': 'max_price_mwh'}),
         on=['date', 'country'],
         how='left'
     )
     metrics = metrics.merge(
-        avg_prices.rename(columns={'price': 'weighted_avg'}),
+        avg_prices.rename(columns={'price': 'weighted_avg_mwh'}),
         on=['date', 'country'],
         how='left'
     )
-    
+
+    # Add kWh columns by dividing MWh columns by 1000
+    metrics['min_price_kwh'] = metrics['min_price_mwh'] / 1000
+    metrics['max_price_kwh'] = metrics['max_price_mwh'] / 1000
+    metrics['weighted_avg_kwh'] = metrics['weighted_avg_mwh'] / 1000
+
+    # Add kwh_all_in_price column using tax config if provided
+    if country_tax_configs is not None:
+        def calc_all_in(row):
+            country = row['country']
+            tax_cfg = country_tax_configs.get(country)
+            if not tax_cfg:
+                return None
+            price_per_kwh = row['weighted_avg_mwh'] / 1000
+            energy_tax = tax_cfg.get('energy_tax', 0)
+            renewable_energy_tax = tax_cfg.get('renewable_energy_tax', 0)
+            vat_rate = tax_cfg.get('vat_rate', 0)
+            pre_vat_price = price_per_kwh + energy_tax + renewable_energy_tax
+            all_in_price_val = pre_vat_price * (1 + vat_rate)
+            return round(all_in_price_val, 5)
+        metrics['weighted_avg_kwh_all_in_price'] = metrics.apply(calc_all_in, axis=1)
+        if 'kwh_all_in_price' in metrics.columns:
+            metrics = metrics.drop(columns=['kwh_all_in_price'])
+
     # Add timezone info if available in the original DataFrame
     if 'timezone' in df.columns:
-        # Get the timezone for each country
         timezone_info = df.groupby('country')['timezone'].first().reset_index()
         metrics = metrics.merge(timezone_info, on='country', how='left')
-    
+
     return metrics
 
 def export_to_csv(df: pd.DataFrame, filename: str) -> None:
@@ -575,7 +597,7 @@ def get_timezone_suffix(country_code: str, use_local_time: bool) -> str:
     else:
         return "utc"
 
-def process_country_data(country_code: str, api_key: str, start_date: datetime, end_date: datetime, use_local_time: bool) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def process_country_data(country_code: str, api_key: str, start_date: datetime, end_date: datetime, use_local_time: bool, country_tax_configs: dict = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Process data for a specific country.
     
@@ -616,7 +638,7 @@ def process_country_data(country_code: str, api_key: str, start_date: datetime, 
         timezone_info = " (using UTC timezone)"
     
     # Calculate metrics
-    daily_metrics = calculate_daily_metrics(df)
+    daily_metrics = calculate_daily_metrics(df, country_tax_configs=country_tax_configs)
     
     # Export to CSV with timezone in filename
     metrics_filename = f"{country_code.lower()}_price_metrics_{timezone_suffix}.csv"
@@ -672,13 +694,17 @@ def main():
     else:
         logger.info("Using UTC timezone for all data")
     
+    # Load country tax configs
+    with open(os.path.join(os.path.dirname(__file__), 'country_config.json'), 'r') as f:
+        country_tax_configs = json.load(f)
+    
     try:
         all_metrics = []
         all_raw_data = []
         
         # Process each country
         for country_code in countries:
-            metrics_df, raw_df = process_country_data(country_code, api_key, start_date, end_date, use_local_time)
+            metrics_df, raw_df = process_country_data(country_code, api_key, start_date, end_date, use_local_time, country_tax_configs=country_tax_configs)
             
             if not metrics_df.empty:
                 all_metrics.append(metrics_df)

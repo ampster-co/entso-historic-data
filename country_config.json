@@ -1,0 +1,38 @@
+{
+  "NL": {
+    "domain_code": "10YNL----------L",
+    "timezone": "Europe/Amsterdam",
+    "energy_tax": 0.1228,
+    "renewable_energy_tax": 0.001,
+    "vat_rate": 0.21,
+    "currency": "EUR",
+    "debug_raw_output": false 
+  },
+  "BE": {
+    "domain_code": "10YBE----------2",
+    "timezone": "Europe/Brussels",
+    "energy_tax": 0.10,
+    "renewable_energy_tax": 0.002,
+    "vat_rate": 0.20,
+    "currency": "EUR",
+    "debug_raw_output": false
+  },
+  "FR": {
+    "domain_code": "10YFR-RTE------C",
+    "timezone": "Europe/Paris",
+    "energy_tax": 0.12,
+    "renewable_energy_tax": 0.002,
+    "vat_rate": 0.20,
+    "currency": "EUR",
+    "debug_raw_output": false
+  },
+  "AT": {
+    "domain_code": "10YAT-APG------L",
+    "timezone": "Europe/Vienna",
+    "energy_tax": 0.11,
+    "renewable_energy_tax": 0.0015,
+    "vat_rate": 0.21,
+    "currency": "EUR",
+    "debug_raw_output": false
+  }
+}

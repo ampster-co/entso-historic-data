@@ -204,14 +204,21 @@ class TestEntsoeRetriever(unittest.TestCase):
         self.assertFalse(metrics.empty, "Metrics DataFrame should not be empty")
         
         # Check that the metrics DataFrame has the expected columns
-        expected_columns = ['date', 'country', 'min_price', 'max_price', 'weighted_avg']
+        expected_columns = [
+            'date', 'country',
+            'min_price_mwh', 'max_price_mwh', 'weighted_avg_mwh',
+            'min_price_kwh', 'max_price_kwh', 'weighted_avg_kwh'
+        ]
         for column in expected_columns:
             self.assertIn(column, metrics.columns, f"Metrics DataFrame should have column: {column}")
         
         # Check that the metrics are calculated correctly
-        self.assertEqual(metrics['min_price'].iloc[0], 10, "Minimum price should be 10")
-        self.assertEqual(metrics['max_price'].iloc[0], 240, "Maximum price should be 240")
-        self.assertEqual(metrics['weighted_avg'].iloc[0], 125, "Weighted average should be 125")
+        self.assertEqual(metrics['min_price_mwh'].iloc[0], 10, "Minimum price (MWh) should be 10")
+        self.assertEqual(metrics['max_price_mwh'].iloc[0], 240, "Maximum price (MWh) should be 240")
+        self.assertEqual(metrics['weighted_avg_mwh'].iloc[0], 125, "Weighted average (MWh) should be 125")
+        self.assertAlmostEqual(metrics['min_price_kwh'].iloc[0], 0.01, places=5, msg="Minimum price (kWh) should be 0.01")
+        self.assertAlmostEqual(metrics['max_price_kwh'].iloc[0], 0.24, places=5, msg="Maximum price (kWh) should be 0.24")
+        self.assertAlmostEqual(metrics['weighted_avg_kwh'].iloc[0], 0.125, places=5, msg="Weighted average (kWh) should be 0.125")
         
         logger.info("Metric calculation test passed")
     
@@ -225,9 +232,12 @@ class TestEntsoeRetriever(unittest.TestCase):
         df = pd.DataFrame({
             'date': ['2022-01-01', '2022-01-02', '2022-01-03'],
             'country': ['NL', 'NL', 'NL'],
-            'min_price': [10, 20, 30],
-            'max_price': [100, 200, 300],
-            'weighted_avg': [50, 100, 150]
+            'min_price_mwh': [10, 20, 30],
+            'max_price_mwh': [100, 200, 300],
+            'weighted_avg_mwh': [50, 100, 150],
+            'min_price_kwh': [0.01, 0.02, 0.03],
+            'max_price_kwh': [0.1, 0.2, 0.3],
+            'weighted_avg_kwh': [0.05, 0.1, 0.15]
         })
         
         # Export to CSV
@@ -241,14 +251,21 @@ class TestEntsoeRetriever(unittest.TestCase):
         df_read = pd.read_csv(test_filename)
         
         # Check that the DataFrame has the expected columns
-        expected_columns = ['date', 'country', 'min_price', 'max_price', 'weighted_avg']
+        expected_columns = [
+            'date', 'country',
+            'min_price_mwh', 'max_price_mwh', 'weighted_avg_mwh',
+            'min_price_kwh', 'max_price_kwh', 'weighted_avg_kwh'
+        ]
         for column in expected_columns:
             self.assertIn(column, df_read.columns, f"DataFrame should have column: {column}")
         
         # Check that the DataFrame has the expected values
-        self.assertEqual(df_read['min_price'].iloc[0], 10, "Minimum price should be 10")
-        self.assertEqual(df_read['max_price'].iloc[0], 100, "Maximum price should be 100")
-        self.assertEqual(df_read['weighted_avg'].iloc[0], 50, "Weighted average should be 50")
+        self.assertEqual(df_read['min_price_mwh'].iloc[0], 10, "Minimum price (MWh) should be 10")
+        self.assertEqual(df_read['max_price_mwh'].iloc[0], 100, "Maximum price (MWh) should be 100")
+        self.assertEqual(df_read['weighted_avg_mwh'].iloc[0], 50, "Weighted average (MWh) should be 50")
+        self.assertAlmostEqual(df_read['min_price_kwh'].iloc[0], 0.01, places=5, msg="Minimum price (kWh) should be 0.01")
+        self.assertAlmostEqual(df_read['max_price_kwh'].iloc[0], 0.1, places=5, msg="Maximum price (kWh) should be 0.1")
+        self.assertAlmostEqual(df_read['weighted_avg_kwh'].iloc[0], 0.05, places=5, msg="Weighted average (kWh) should be 0.05")
         
         # Clean up
         os.remove(test_filename)
